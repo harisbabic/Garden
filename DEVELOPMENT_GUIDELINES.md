@@ -1,34 +1,128 @@
 # Development Guidelines
 
 ## Code Structure
-This project follows a modular architecture. Each module should be self-contained with its own routes, components, and business logic.
+[Add code structure information here..]
 
-### Directory Structure
-```
-project-root/
-├── server/
-│   ├── src/
-│   │   ├── modules/
-│   │   │   ├── core/
-│   │   │   ├── user-management/
-│   │   │   ├── authentication/
-│   │   │   └── ...
-│   │   └── module-loader.js
-├── client/
-│   ├── src/
-│   │   ├── modules/
-│   │   │   ├── core/
-│   │   │   ├── user-management/
-│   │   │   ├── authentication/
-│   │   │   └── ...
-│   │   └── module-loader.js
-└── module-config.json
+### 1. **Project Structure**
+We'll start by organizing the project into a clear and scalable directory structure within your `~/Node/projects` directory:
+
+```bash
+mkdir -p ~/Node/projects/GardenPlanner/{client,server,scripts,config,logs,docs}
 ```
 
-## Module Development
-1. Create a new directory for your module under `server/src/modules/` and/or `client/src/modules/`.
-2. Implement the module's functionality.
-3. Update `module-config.json` to include your new module.
+- **client/**: Front-end application for the garden planning interface.
+- **server/**: Back-end API for data management, tracking, and storage.
+- **scripts/**: Utility scripts for automation and setup.
+- **config/**: Configuration files, including environment variables.
+- **logs/**: Log files for debugging and monitoring.
+- **docs/**: Documentation and project plans.
+
+### 2. **Initial Setup**
+Using our scripts, initialize the project:
+
+```bash
+cd ~/Node/projects/GardenPlanner
+~/Node/scripts/init-project.sh
+```
+
+This will copy the basic project template into the `GardenPlanner` directory and install necessary dependencies.
+
+### 3. **Environment Configuration**
+Set up the environment with secure `.env` variables. For this project, you'll likely need variables related to database configuration, API keys for any third-party services (like weather data), and JWT secrets for user authentication.
+
+```bash
+~/Node/scripts/setup-env.sh GardenPlanner
+```
+
+### 4. **Back-End API (server/)**
+The server will handle data collection from forms (planting, monthly tracking, etc.), store it in a database, and provide endpoints for the front-end to fetch and display data.
+
+**Example structure:**
+```bash
+mkdir -p server/src/{controllers,models,routes}
+```
+
+**Server entry point (index.js):**
+```javascript
+const express = require('express');
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(express.json());
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
+```
+
+### 5. **Database Setup**
+Given the need for extensive tracking capabilities, you'll want a relational database like PostgreSQL or MySQL. Create schemas for tracking forms, plant tables, and planning data.
+
+**Example schema (garden_schema.sql):**
+```sql
+CREATE TABLE plants (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    type VARCHAR(50),
+    plant_date DATE,
+    ph_level DECIMAL(3,2),
+    feeding_schedule TEXT
+);
+
+CREATE TABLE monthly_tracking (
+    id SERIAL PRIMARY KEY,
+    plant_id INT REFERENCES plants(id),
+    month VARCHAR(20),
+    growth_stage TEXT,
+    issues TEXT,
+    actions_taken TEXT
+);
+```
+
+### 6. **Front-End Application (client/)**
+The front-end will be responsible for data input (e.g., through forms) and visualization (e.g., planting schedules, monthly tracking).
+
+Consider using a framework like React for building interactive UI components, with form validations and dynamic table renderings.
+
+**Client entry point (index.js):**
+```javascript
+import React from 'react';
+import ReactDOM from 'react-dom';
+import App from './App';
+
+ReactDOM.render(<App />, document.getElementById('root'));
+```
+
+### 7. **Security Implementation**
+Ensure all sensitive data (like API keys) is secured through environment variables. Implement JWT authentication on the server to protect user data.
+
+### 8. **Testing and CI/CD**
+Set up testing with Jest for both front-end and back-end. Create a GitHub Actions workflow to run these tests automatically on each push.
+
+**Example GitHub Actions workflow:**
+```yaml
+name: GardenPlanner CI
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+    - run: npm install
+    - run: npm test
+```
+
+### 9. **Documentation**
+Update the `docs/` directory with the `PROJECT_OVERVIEW.md`, tracking forms, tables, and comprehensive garden planning details. This will keep everything well-organized and easy to reference.
 
 ## Critical Development Guidelines
 
@@ -99,36 +193,3 @@ This process ensures that anyone can quickly understand the current state of the
 
 ## Continuous Integration/Continuous Deployment (CI/CD)
 (Include information about the CI/CD pipeline, if applicable.)
-
-
-
-These updated guidelines provide a comprehensive framework for our development process. They address crucial aspects such as code completeness, security, performance, and accessibility, which are essential for creating a robust and maintainable application.
-
-Now that we have these guidelines in place, we can proceed with implementing the core module. Before we start, let's update our PROJECT_STATUS.md to reflect our current status and next steps:
-
-
-# Project Status
-
-## Project Status Summary
-The project is in its initial setup phase. We have established the basic project structure, including the modular architecture for both server and client sides. We have also updated our development guidelines to ensure high-quality, consistent code throughout the project.
-
-## Current Focus
-- Implementing the core module with basic functionality
-- Setting up the database and ORM
-- Creating the basic CRUD operations for the plant management system
-
-## Recent Changes
-- Updated DEVELOPMENT_GUIDELINES.md with comprehensive guidelines for AI-assisted development
-- Refined project structure and documentation
-
-## Next Steps
-1. Set up the database and choose an ORM
-2. Implement the core module with basic plant management functionality
-3. Create comprehensive tests for the core module
-4. Set up error handling and logging for the core module
-5. Begin work on the user management module
-
-## Open Questions or Challenges
-- Decide on the specific ORM to use for database interactions
-- Determine the best approach for handling real-time updates (e.g., WebSockets, Server-Sent Events)
-- Explore options for integrating with weather APIs
